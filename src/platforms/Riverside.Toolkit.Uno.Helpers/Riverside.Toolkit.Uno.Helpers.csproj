@@ -1,2 +1,5 @@
 ﻿<Project Sdk="Uno.Sdk">
+  <PropertyGroup>
+    <Platforms>AnyCPU;x64</Platforms>
+  </PropertyGroup>
 </Project>

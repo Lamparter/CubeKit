@@ -1,4 +1,7 @@
 ﻿<Project Sdk="Uno.Sdk">
+	<PropertyGroup>
+	  <Platforms>AnyCPU;x64</Platforms>
+	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Riverside.Toolkit.Uno.Converters\Riverside.Toolkit.Uno.Converters.csproj" />
 	</ItemGroup>

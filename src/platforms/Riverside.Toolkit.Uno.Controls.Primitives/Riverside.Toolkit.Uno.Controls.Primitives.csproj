@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Uno.Sdk">
 	<PropertyGroup>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Riverside.Toolkit.Uno.Helpers\Riverside.Toolkit.Uno.Helpers.csproj" />

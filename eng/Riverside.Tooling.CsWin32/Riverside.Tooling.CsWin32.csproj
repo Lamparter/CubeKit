@@ -4,6 +4,8 @@
 		<IsAotCompatible Condition="'$(TargetFramework)' == 'net8.0-windows'">true</IsAotCompatible>
 
 		<Description>Internal implementation package not meant for direct consumption. Please do not reference directly.</Description>
+
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 
 	<ItemGroup>

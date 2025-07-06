@@ -1,4 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+	  <Platforms>AnyCPU;x64</Platforms>
+	</PropertyGroup>
 	<ItemGroup>
 		<ProjectReference Include="..\Riverside.Toolkit.WinUI.Helpers\Riverside.Toolkit.WinUI.Helpers.csproj" />
 	</ItemGroup>

@@ -18,10 +18,7 @@ namespace Riverside.Toolkit.Controls;
 [DependencyProperty<bool>("IsClosable", DefaultValue = true, OnChanged = "OnTitleBarPropertyChanged")]
 [DependencyProperty<bool>("UseWinUIEverywhere", DefaultValue = false, OnChanged = "OnTitleBarPropertyChanged")]
 [DependencyProperty<bool>("MemorizeWindowPosition", DefaultValue = false, OnChanged = "OnTitleBarPropertyChanged")]
-
-// Required for style
-[DependencyProperty<Color>("CaptionForegroundInteract")]
-[DependencyProperty<SolidColorBrush>("CurrentForeground")]
+[DependencyProperty<bool>("IsToolWindow", DefaultValue = false, OnChanged = "OnTitleBarPropertyChanged")]
 
 // Required for WinUI system menu
 [DependencyProperty<bool>("CanMaximize", IsReadOnly = true)]

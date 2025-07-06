@@ -273,7 +273,7 @@ public partial class TitleBarEx
             // Accent enabled
             if (this.AccentStrip is not null) UpdateAccentVisibility(isWindowFocused);
 
-            this.CurrentForeground = isWindowFocused ?
+            /*this.CurrentForeground = isWindowFocused ?
                 // If the window is focused, make the buttons white
                 new SolidColorBrush(Colors.White) :
 
@@ -287,14 +287,14 @@ public partial class TitleBarEx
                 Colors.White :
 
                 // If the window is not focused, sync buttons with theme
-                focusedForeground?.Color;
+                focusedForeground?.Color;*/
         }
         else
         {
             // Accent disabled
             if (this.AccentStrip is not null) UpdateAccentVisibility(false);
 
-            this.CurrentForeground = isWindowFocused ?
+            /*this.CurrentForeground = isWindowFocused ?
                 // If the window is focused, make the buttons a solid color (theme synced)
                 focusedForeground :
 
@@ -303,8 +303,10 @@ public partial class TitleBarEx
 
             Application.Current.Resources["CaptionForegroundInteract"] =
                 // Doesn't require special handling
-                focusedForeground?.Color;
+                focusedForeground?.Color;*/
         }
+
+        SwitchState(ButtonsState.None);
 
         // Local method to toggle AccentStrip visibility
         void UpdateAccentVisibility(bool isVisible) => this.AccentStrip.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;

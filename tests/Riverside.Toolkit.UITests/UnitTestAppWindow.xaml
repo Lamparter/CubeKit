@@ -18,6 +18,7 @@
             <ToggleSwitch Header="Closable" IsOn="{x:Bind TitleBar.IsClosable, Mode=TwoWay}" />
             <ToggleSwitch Header="Always use WinUI" IsOn="{x:Bind TitleBar.UseWinUIEverywhere, Mode=TwoWay}" />
             <ToggleSwitch Header="Allow accent title bar" IsOn="{x:Bind TitleBar.IsAccentTitleBarEnabled, Mode=TwoWay}" />
+            <ToggleSwitch Header="Use ToolWindow" IsOn="{x:Bind TitleBar.IsToolWindow, Mode=TwoWay}" />
         </StackPanel>
         <toolkit:TitleBarEx
             x:Name="TitleBar"
