@@ -167,6 +167,19 @@ public partial class TitleBarEx
                 CheckMaximization();
 
                 UpdateWindowBrushes();
+
+                if (!IsMinimizable && !IsMaximizable)
+                {
+                    // If both minimize and maximize are disabled, hide the buttons
+                    this.MinimizeButton.Visibility = Visibility.Collapsed;
+                    this.MaximizeRestoreButton.Visibility = Visibility.Collapsed;
+                }
+                else
+                {
+                    // Show buttons if at least one is enabled
+                    this.MinimizeButton.Visibility = Visibility.Visible;
+                    this.MaximizeRestoreButton.Visibility = Visibility.Visible;
+                }
             }
         }
         catch
