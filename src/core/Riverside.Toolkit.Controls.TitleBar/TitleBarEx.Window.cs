@@ -1,17 +1,8 @@
-﻿using Microsoft.UI;
-using Microsoft.UI.Windowing;
+﻿using Microsoft.UI.Windowing;
 using Windows.Win32;
 using Windows.Win32.Foundation;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using Riverside.Extensions.PInvoke;
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Windows.Graphics;
-using WinUIEx;
 using static Riverside.Toolkit.Helpers.NativeHelper;
 
 namespace Riverside.Toolkit.Controls;
@@ -25,7 +16,7 @@ public partial class TitleBarEx
         LoadDragRegion();
     }
 
-    private void LoadDragRegion()
+    public virtual void LoadDragRegion()
     {
         try
         {
@@ -175,36 +166,12 @@ public partial class TitleBarEx
 
                 CheckMaximization();
 
-                // Update button visibility and styles
-                /*SetButtonVisibility(
-                    // Check if the buttons are both disabled
-                    !this.IsMinimizable && !this.IsMaximizable ?
-
-                    // If yes, hide them
-                    Visibility.Collapsed :
-
-                    // If not, keep them open
-                    Visibility.Visible,
-
-                    // Check if the buttons are both disabled
-                    !this.IsMinimizable && !this.IsMaximizable ?
-
-                    // If yes, change the style of the close button
-                    this.CloseButtonSingularStyleKey :
-
-                    // If not, restore the original close button style
-                    this.CloseButtonRegularStyleKey);*/
+                UpdateWindowBrushes();
             }
         }
         catch
         {
 
-        }
-
-        // Local method to update button visibility and style
-        void SetButtonVisibility(Visibility visibility, string? closeStyleKey)
-        {
-            this.MinimizeButton.Visibility = this.MaximizeRestoreButton.Visibility = visibility;
         }
     }
 
@@ -245,7 +212,7 @@ public partial class TitleBarEx
         allowSizeCheck = true;
 
         // Small delay before switching state
-        await Task.Delay(200);
+        await Task.Delay(50);
 
         // Reset button states
         SwitchState(ButtonsState.None);
@@ -272,38 +239,11 @@ public partial class TitleBarEx
         {
             // Accent enabled
             if (this.AccentStrip is not null) UpdateAccentVisibility(isWindowFocused);
-
-            /*this.CurrentForeground = isWindowFocused ?
-                // If the window is focused, make the buttons white
-                new SolidColorBrush(Colors.White) :
-
-                // If the window is not focused, sync buttons with theme
-                unfocusedForeground;
-
-            Application.Current.Resources["CaptionForegroundInteract"] =
-                isWindowFocused ?
-
-                // If the window is focused, make the buttons white
-                Colors.White :
-
-                // If the window is not focused, sync buttons with theme
-                focusedForeground?.Color;*/
         }
         else
         {
             // Accent disabled
             if (this.AccentStrip is not null) UpdateAccentVisibility(false);
-
-            /*this.CurrentForeground = isWindowFocused ?
-                // If the window is focused, make the buttons a solid color (theme synced)
-                focusedForeground :
-
-                // If the window is not focused, sync buttons with theme
-                unfocusedForeground;
-
-            Application.Current.Resources["CaptionForegroundInteract"] =
-                // Doesn't require special handling
-                focusedForeground?.Color;*/
         }
 
         SwitchState(ButtonsState.None);
@@ -322,9 +262,9 @@ public static class WindowExtensions
     private const int SC_MOVE = 0xF010;       // Move window
     private const int SC_SIZE = 0xF000;       // Resize window
 
-    public static IntPtr GetHwnd(this WindowEx windowEx) =>
+    public static IntPtr GetHwnd(this WindowEx windowEx)
         // Get the native window handle (HWND)
-        WinRT.Interop.WindowNative.GetWindowHandle(windowEx);
+        => WinRT.Interop.WindowNative.GetWindowHandle(windowEx);
 
     public static void InvokeResize(this WindowEx windowEx) => PInvoke.PostMessage((HWND)windowEx.GetHwnd(), WM_SYSCOMMAND, SC_SIZE, IntPtr.Zero);
 

@@ -171,11 +171,6 @@ public partial class TitleBarEx
             // Close button
             case ButtonsState.ClosePointerOver or ButtonsState.ClosePressed:
                 {
-                    if (!this.IsClosable)
-                    {
-                        closeState = "Disabled";
-                        break;
-                    }
                     switch (buttonsState)
                     {
                         case ButtonsState.ClosePointerOver:
@@ -189,6 +184,11 @@ public partial class TitleBarEx
                     }
                     break;
                 }
+        }
+
+        if (!this.IsClosable)
+        {
+            closeState = "Disabled";
         }
 
         if (IsAccentColorEnabledForTitleBars() && IsAccentTitleBarEnabled)
