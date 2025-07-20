@@ -161,7 +161,7 @@
                         CornerRadius="{TemplateBinding CornerRadius}"
                         Foreground="{TemplateBinding Foreground}">
                         <ContentPresenter.BackgroundTransition>
-                            <BrushTransition Duration="0:0:0.083" />
+                            <BrushTransition Duration="0:0:0.05" />
                         </ContentPresenter.BackgroundTransition>
                         <FontIcon FontSize="10" Glyph="&#xE8BB;" />
                         <VisualStateManager.VisualStateGroups>

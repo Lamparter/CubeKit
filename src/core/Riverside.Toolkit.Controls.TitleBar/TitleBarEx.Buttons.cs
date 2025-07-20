@@ -12,7 +12,7 @@ public partial class TitleBarEx
         string maximizeState = this.IsMaximizable ? isMaximized ? "Checked" : "Normal" : isMaximized ? "CheckedDisabled" : "Disabled";
         string closeState = this.IsClosable ? "Normal" : "Disabled";
 
-        // Switch based on button states
+        /*// Switch based on button states
         switch (buttonsState)
         {
             // Minimize button
@@ -91,17 +91,7 @@ public partial class TitleBarEx
 
                 // Is not maximizable
                 isMaximized ? "CheckedDisabled" : "Disabled";
-        }
-
-        // Handle WinUI tooltips
-        if (this.UseWinUIEverywhere)
-        {
-            var minimizeTooltip = (ToolTip)ToolTipService.GetToolTip(this.MinimizeButton);
-            var closeTooltip = (ToolTip)ToolTipService.GetToolTip(this.CloseButton);
-
-            minimizeTooltip.IsOpen = buttonsState == ButtonsState.MinimizePointerOver;
-            closeTooltip.IsOpen = buttonsState == ButtonsState.ClosePointerOver;
-        }
+        }*/
 
         // NEW BUTTONS MINIMIZE LOGIC
 
@@ -115,56 +105,34 @@ public partial class TitleBarEx
             // Minimize button
             case ButtonsState.MinimizePointerOver or ButtonsState.MinimizePressed:
                 {
-                    minimizeState =
-                        // Check if button action is allowed
-                        this.IsMinimizable ?
-
-                        // Button action is allowed
-                        (buttonsState == ButtonsState.MinimizePointerOver ?
-
-                        // Pointer is over
-                        "PointerOver" :
-
-                        // Pointer is pressed
-                        "Pressed") :
-
-                        // Check if the window is unfocused
-                        !this.isWindowFocused ?
-
-                        // The window is not focused
-                        "Unfocused" :
-
-                        // Button action is not allowed
-                        "Disabled";
-
+                    switch (buttonsState)
+                    {
+                        case ButtonsState.MinimizePointerOver:
+                            minimizeState = "PointerOver";
+                            break;
+                        case ButtonsState.MinimizePressed:
+                            minimizeState = "Pressed";
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 }
 
             // Maximize button
             case ButtonsState.MaximizePointerOver or ButtonsState.MaximizePressed:
                 {
-                    maximizeState =
-                        // Check if button action is allowed
-                        this.IsMaximizable ?
-
-                        // Button action is allowed
-                        (buttonsState == ButtonsState.MaximizePointerOver ?
-
-                        // Pointer is over
-                        "PointerOver" :
-
-                        // Pointer is pressed
-                        "Pressed") :
-
-                        // Check if the window is unfocused
-                        !this.isWindowFocused ?
-
-                        // The window is not focused
-                        "Unfocused" :
-
-                        // Button action is not allowed
-                        "Disabled";
-
+                    switch (buttonsState)
+                    {
+                        case ButtonsState.MaximizePointerOver:
+                            maximizeState = "PointerOver";
+                            break;
+                        case ButtonsState.MaximizePressed:
+                            maximizeState = "Pressed";
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 }
 
@@ -208,6 +176,18 @@ public partial class TitleBarEx
         if (isMaximized)
         {
             maximizeState = "Maximized" + maximizeState;
+        }
+
+        // Handle WinUI tooltips
+        if (this.UseWinUIEverywhere)
+        {
+            var minimizeTooltip = (ToolTip)ToolTipService.GetToolTip(this.MinimizeButton);
+            var closeTooltip = (ToolTip)ToolTipService.GetToolTip(this.CloseButton);
+
+            if (minimizeTooltip.IsOpen != (buttonsState == ButtonsState.MinimizePointerOver))
+                minimizeTooltip.IsOpen = buttonsState == ButtonsState.MinimizePointerOver;
+            if (closeTooltip.IsOpen != (buttonsState == ButtonsState.ClosePointerOver))
+                closeTooltip.IsOpen = buttonsState == ButtonsState.ClosePointerOver;
         }
 
         // Apply the visual states based on the calculated states
