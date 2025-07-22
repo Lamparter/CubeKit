@@ -1,7 +1,5 @@
-﻿using Riverside.Extensions.PInvoke;
-using Windows.Win32;
-using System;
-using System.Runtime.InteropServices;
+﻿using Windows.Win32;
+using WinRT.Interop;
 
 namespace Riverside.Toolkit.Controls;
 
@@ -27,10 +25,26 @@ public partial class TitleBarEx
     private const int WND_FRAME_TOP_NORMAL = 1;        // Top window frame (not maximized)
 
     // Others
-    private const int WA_INACTIVE = 0;                 // Activate (inactive)
     private const int VK_LBUTTON = 0x01;               // Virtual key code for the left mouse button
 
-    private static bool IsLeftMouseButtonDown() =>
+    private static bool IsLeftMouseButtonDown()
         // The high-order bit indicates if the key is down
-        (PInvoke.GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+        => (PInvoke.GetAsyncKeyState(VK_LBUTTON) & 0x8000) != 0;
+
+    /// <summary>
+    /// Check if the window is focused.
+    /// </summary>
+    /// <param name="window"></param>
+    /// <returns></returns>
+    public static bool IsWindowFocused(WindowEx window)
+    {
+        // Get HWND for this window
+        var hwnd = new Windows.Win32.Foundation.HWND(WindowNative.GetWindowHandle(window));
+
+        // Get the foreground window
+        var foregroundHwnd = PInvoke.GetForegroundWindow();
+
+        // Compare
+        return hwnd == foregroundHwnd;
+    }
 }

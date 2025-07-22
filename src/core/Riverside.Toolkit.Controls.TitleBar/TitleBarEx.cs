@@ -5,40 +5,56 @@ namespace Riverside.Toolkit.Controls;
 
 public partial class TitleBarEx : Control
 {
-    // The window
+    /// <summary>
+    /// The current window associated with this title bar. Do not set this property directly; use <see cref="InitializeForWindow(WindowEx)"/> instead.
+    /// </summary>
     protected WindowEx? CurrentWindow { get; private set; }
 
     // UI controls
     protected Button? CloseButton { get; private set; }
-    protected ToggleButton? MaximizeRestoreButton { get; private set; }
+    protected Button? MaximizeRestoreButton { get; private set; }
     protected Button? MinimizeButton { get; private set; }
     protected TextBlock? TitleTextBlock { get; private set; }
     protected Image? TitleBarIcon { get; private set; }
     protected Border? AccentStrip { get; private set; }
     protected MenuFlyout? CustomRightClickFlyout { get; private set; }
 
-    // Local variables
+    /// <summary>
+    /// The currently selected caption button.
+    /// </summary>
     protected SelectedCaptionButton CurrentCaption { get; private set; } = SelectedCaptionButton.None;
-    private WindowMessageMonitor? messageMonitor;
-    private bool isWindowFocused = false;
-    private bool isMaximized = false;
-    private int buttonDownHeight = 0;
-    private double additionalHeight = 0;
-    private bool closed = false;
-    private bool allowSizeCheck = false;
 
+    // Local variables
+    private WindowMessageMonitor? _messageMonitor;
+    private bool _isWindowFocused = false;
+    private bool _isMaximized = false;
+    private int _buttonDownHeight = 0;
+    private double _additionalHeight = 0;
+    private bool _closed = false;
+    private bool _allowSizeCheck = false;
+    private bool _loaded = false;
+
+    /// <summary>
+    /// XAML title bar control for WinUI 3 apps.
+    /// </summary>
     public TitleBarEx()
     {
         this.DefaultStyleKey = typeof(TitleBarEx);
+        this.Loaded += TitleBarEx_Loaded;
     }
 
+    private void TitleBarEx_Loaded(object sender, RoutedEventArgs e) => _loaded = true;
+
+    /// <summary>
+    /// Loader method for the control template.
+    /// </summary>
     protected override void OnApplyTemplate()
     {
         base.OnApplyTemplate();
 
         // Using GetTemplateChild<T> to safely retrieve template children and cast them
         this.CloseButton = GetTemplateChild<Button>("CloseButton");
-        this.MaximizeRestoreButton = GetTemplateChild<ToggleButton>("MaximizeButton");
+        this.MaximizeRestoreButton = GetTemplateChild<Button>("MaximizeButton");
         this.MinimizeButton = GetTemplateChild<Button>("MinimizeButton");
         this.TitleTextBlock = GetTemplateChild<TextBlock>("TitleTextBlock");
         this.TitleBarIcon = GetTemplateChild<Image>("TitleBarIcon");
@@ -54,12 +70,16 @@ public partial class TitleBarEx : Control
         GetTemplateChild<MenuFlyoutItem>("RestoreContextMenuItem").Click += RestoreContextMenu_Click;
     }
 
-    public void InitializeForWindow(WindowEx windowEx, Application app)
+    /// <summary>
+    /// Initialize the TitleBarEx control for the current window.
+    /// </summary>
+    /// <param name="windowEx"></param>
+    public void InitializeForWindow(WindowEx windowEx)
     {
         this.CurrentWindow = windowEx;
 
         // Configure title bar
-        this.CurrentWindow.AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+        this.CurrentWindow.ExtendsContentIntoTitleBar = true;
         this.CurrentWindow.AppWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Collapsed;
 
         // Attach pointer events

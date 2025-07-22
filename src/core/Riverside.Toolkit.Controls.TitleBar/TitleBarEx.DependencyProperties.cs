@@ -1,9 +1,4 @@
 ﻿using DependencyPropertyGenerator;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Media;
-using System;
-using Windows.UI;
-using WinUIEx;
 
 namespace Riverside.Toolkit.Controls;
 
@@ -19,6 +14,8 @@ namespace Riverside.Toolkit.Controls;
 [DependencyProperty<bool>("UseWinUIEverywhere", DefaultValue = false, OnChanged = "OnTitleBarPropertyChanged")]
 [DependencyProperty<bool>("MemorizeWindowPosition", DefaultValue = false, OnChanged = "OnTitleBarPropertyChanged")]
 [DependencyProperty<bool>("IsToolWindow", DefaultValue = false, OnChanged = "OnTitleBarPropertyChanged")]
+[DependencyProperty<bool>("ShowIcon", DefaultValue = true, OnChanged = "OnTitleBarPropertyChanged")]
+[DependencyProperty<bool>("HookIntoClosedEvent", DefaultValue = true, OnChanged = "OnTitleBarPropertyChanged")]
 
 // Required for WinUI system menu
 [DependencyProperty<bool>("CanMaximize", IsReadOnly = true)]

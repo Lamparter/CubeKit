@@ -3,3 +3,4 @@ ReleaseDC
 GetDeviceCaps
 PostMessage
 GetAsyncKeyState
+GetForegroundWindow

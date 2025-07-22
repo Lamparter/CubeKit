@@ -2,104 +2,23 @@
 
 public partial class TitleBarEx
 {
+    /// <summary>
+    /// Method to switch the visual states of the title bar and its buttons based on the current selection state.
+    /// </summary>
+    /// <param name="buttonsState"></param>
     protected void SwitchState(ButtonsState buttonsState)
     {
+        _isWindowFocused = IsWindowFocused(this.CurrentWindow);
+
         // If the buttons don't exist return
-        if (this.CloseButton is null || this.MaximizeRestoreButton is null || this.MinimizeButton is null || closed) return;
+        if (this.CloseButton is null || this.MaximizeRestoreButton is null || this.MinimizeButton is null || _closed) return;
 
         // Default states
-        string minimizeState = this.IsMinimizable ? "Normal" : "Disabled";
-        string maximizeState = this.IsMaximizable ? isMaximized ? "Checked" : "Normal" : isMaximized ? "CheckedDisabled" : "Disabled";
-        string closeState = this.IsClosable ? "Normal" : "Disabled";
+        var minimizeState = !this._isWindowFocused ? "Unfocused" : "Normal";
+        var maximizeState = !this._isWindowFocused ? "Unfocused" : "Normal";
+        var closeState = !this._isWindowFocused ? "Unfocused" : "Normal";
+        var titleBarState = !this._isWindowFocused ? "Unfocused" : IsAccentTitleBarEnabled && IsAccentColorEnabledForTitleBars() ? "FocusedAccent" : "Focused";
 
-        /*// Switch based on button states
-        switch (buttonsState)
-        {
-            // Minimize button
-            case ButtonsState.MinimizePointerOver or ButtonsState.MinimizePressed:
-                {
-                    minimizeState =
-                        // Check if button action is allowed
-                        this.IsMinimizable ?
-
-                        // Button action is allowed
-                        (buttonsState == ButtonsState.MinimizePointerOver ?
-
-                        // Pointer is over
-                        "PointerOver" :
-
-                        // Pointer is pressed
-                        "Pressed") :
-
-                        // Button action is not allowed
-                        "Disabled";
-
-                    break;
-                }
-
-            // Maximize button
-            case ButtonsState.MaximizePointerOver or ButtonsState.MaximizePressed:
-                {
-                    maximizeState =
-                        // Check if button action is allowed
-                        this.IsMaximizable ?
-
-                        // Button action is allowed
-                        buttonsState == ButtonsState.MaximizePointerOver
-
-                        // Pointer is over
-                        ? (isMaximized ? "CheckedPointerOver" : "PointerOver")
-
-                        // Pointer is pressed
-                        : (isMaximized ? "CheckedPressed" : "Pressed") :
-
-                        // Button action is not allowed
-                        isMaximized ? "CheckedDisabled" : "Disabled";
-
-                    break;
-                }
-
-            // Close button
-            case ButtonsState.ClosePointerOver or ButtonsState.ClosePressed:
-                {
-                    closeState =
-                        // Check if button action is allowed
-                        this.IsClosable ?
-
-                        // Button action is allowed
-                        (buttonsState == ButtonsState.ClosePointerOver ?
-
-                        // Pointer is over
-                        "PointerOver" :
-
-                        // Pointer is pressed
-                        "Pressed") :
-
-                        // Button action is not allowed
-                        "Disabled";
-
-                    break;
-                }
-        }
-
-        // Check the maximize state separately
-        if (buttonsState is not (ButtonsState.MaximizePointerOver or ButtonsState.MaximizePressed))
-        {
-            maximizeState =
-                // Is maximizable
-                this.IsMaximizable ? isMaximized ? "Checked" : "Normal" :
-
-                // Is not maximizable
-                isMaximized ? "CheckedDisabled" : "Disabled";
-        }*/
-
-        // NEW BUTTONS MINIMIZE LOGIC
-
-        // First set raw focused/unfocused states
-
-        minimizeState = !this.isWindowFocused ? "Unfocused" : "Normal";
-        maximizeState = !this.isWindowFocused ? "Unfocused" : "Normal";
-        closeState = !this.isWindowFocused ? "Unfocused" : "Normal";
         switch (buttonsState)
         {
             // Minimize button
@@ -152,11 +71,27 @@ public partial class TitleBarEx
                     }
                     break;
                 }
+
+            // No buttons pressed
+            case ButtonsState.None:
+            {
+                break;
+            }
         }
 
         if (!this.IsClosable)
         {
             closeState = "Disabled";
+        }
+
+        if (!this.IsMinimizable)
+        {
+            minimizeState = "Disabled";
+        }
+
+        if (!this.IsMaximizable)
+        {
+            maximizeState = "Disabled";
         }
 
         if (IsAccentColorEnabledForTitleBars() && IsAccentTitleBarEnabled)
@@ -173,9 +108,14 @@ public partial class TitleBarEx
             closeState = "Tool" + closeState;
         }
 
-        if (isMaximized)
+        if (_isMaximized)
         {
             maximizeState = "Maximized" + maximizeState;
+        }
+
+        if (!IsMaximizable && !IsMinimizable)
+        {
+            closeState = "Singular" + closeState;
         }
 
         // Handle WinUI tooltips
@@ -194,5 +134,6 @@ public partial class TitleBarEx
         _ = VisualStateManager.GoToState(this.MinimizeButton, minimizeState, true);
         _ = VisualStateManager.GoToState(this.MaximizeRestoreButton, maximizeState, true);
         _ = VisualStateManager.GoToState(this.CloseButton, closeState, true);
+        _ = VisualStateManager.GoToState(this, titleBarState, true);
     }
 }

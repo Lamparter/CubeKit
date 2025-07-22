@@ -14,6 +14,10 @@ public partial class TitleBarEx
         UpdateWindowProperties();
         CheckMaximization();
         LoadDragRegion();
+        if (_loaded)
+        {
+            SwitchState(ButtonsState.None);
+        }
     }
 
     public virtual void LoadDragRegion()
@@ -21,7 +25,7 @@ public partial class TitleBarEx
         try
         {
             // If the window has been closed, break the loop
-            if (closed) return;
+            if (_closed) return;
 
             // Check if every condition is met
             if (this.CurrentWindow?.AppWindow is not null && this.IsAutoDragRegionEnabled)
@@ -30,7 +34,7 @@ public partial class TitleBarEx
                 int width = (int)(this.CurrentWindow.Bounds.Width * Display.Scale(this.CurrentWindow));
 
                 // Height (Scaled control actual height)
-                int height = (int)((this.ActualHeight + buttonDownHeight) * Display.Scale(this.CurrentWindow));
+                int height = (int)((this.ActualHeight + _buttonDownHeight) * Display.Scale(this.CurrentWindow));
 
                 // Set the drag region for the window's title bar
                 this.CurrentWindow.AppWindow.TitleBar.SetDragRectangles([new RectInt32(0, 0, width, height)]);
@@ -42,15 +46,14 @@ public partial class TitleBarEx
         }
     }
 
-    public void SetWindowIcon(string path)
+    public void SetWindowIcon(Uri titleBarPath, string taskbarPath)
     {
         try
         {
             // Attempt to set the title bar icon
             if (this.TitleBarIcon is not null)
             {
-                var uri = new Uri($"ms-appx:///{path}", UriKind.RelativeOrAbsolute);
-                this.TitleBarIcon.Source = new BitmapImage(uri);
+                this.TitleBarIcon.Source = new BitmapImage(titleBarPath);
             }
         }
         catch
@@ -61,8 +64,7 @@ public partial class TitleBarEx
         try
         {
             // Set the window icon
-            string iconPath = System.IO.Path.Combine(AppContext.BaseDirectory, path);
-            this.CurrentWindow?.SetIcon(iconPath);
+            this.CurrentWindow?.SetIcon(taskbarPath);
         }
         catch
         {
@@ -74,7 +76,7 @@ public partial class TitleBarEx
 
     private void CheckMaximization()
     {
-        if (closed || !allowSizeCheck) return;
+        if (_closed || !_allowSizeCheck) return;
 
         if (this.CurrentWindow?.Presenter is OverlappedPresenter presenter)
         {
@@ -94,17 +96,17 @@ public partial class TitleBarEx
             HandleUnknownState();
         }
 
-        wasMaximized = isMaximized;
+        wasMaximized = _isMaximized;
 
         // Local method to handle the maximized state
         void HandleMaximizedState()
         {
             if (this.MemorizeWindowPosition) SetValue($"{this.WindowTag}Maximized", true);
 
-            additionalHeight = WND_FRAME_TOP_MAXIMIZED; // Required for window drag region
-            isMaximized = true; // Required for NCHITTEST
+            _additionalHeight = WND_FRAME_TOP_MAXIMIZED; // Required for window drag region
+            _isMaximized = true; // Required for NCHITTEST
 
-            if (wasMaximized != isMaximized) SwitchState(ButtonsState.None);
+            if (wasMaximized != _isMaximized) SwitchState(ButtonsState.None);
         }
 
         // Local method to handle the restored state
@@ -119,10 +121,10 @@ public partial class TitleBarEx
                 SetValue<double>($"{this.WindowTag}Height", this.CurrentWindow.AppWindow.Size.Height);
             }
 
-            additionalHeight = WND_FRAME_TOP_NORMAL; // Required for window drag region
-            isMaximized = false; // Required for NCHITTEST
+            _additionalHeight = WND_FRAME_TOP_NORMAL; // Required for window drag region
+            _isMaximized = false; // Required for NCHITTEST
 
-            if (wasMaximized != isMaximized)
+            if (wasMaximized != _isMaximized)
             {
                 SwitchState(ButtonsState.None);
             }
@@ -133,8 +135,8 @@ public partial class TitleBarEx
         {
             if (this.MemorizeWindowPosition) SetValue($"{this.WindowTag}Maximized", true);
 
-            additionalHeight = 0; // Required for window drag region
-            isMaximized = false; // Required for NCHITTEST
+            _additionalHeight = 0; // Required for window drag region
+            _isMaximized = false; // Required for NCHITTEST
         }
     }
 
@@ -143,13 +145,17 @@ public partial class TitleBarEx
         try
         {
             // Update window capabilities
-            this.CanMaximize = !isMaximized && this.IsMaximizable;
-            this.CanMove = !isMaximized;
-            this.CanSize = this.CurrentWindow is not null && !isMaximized && this.CurrentWindow.IsResizable;
-            this.CanRestore = isMaximized && this.IsMaximizable;
+            this.CanMaximize = !_isMaximized && this.IsMaximizable;
+            this.CanMove = !_isMaximized;
+            this.CanSize = this.CurrentWindow is not null && !_isMaximized && this.CurrentWindow.IsResizable;
+            this.CanRestore = _isMaximized && this.IsMaximizable;
 
-            if (this.MinimizeButton is not null && this.MaximizeRestoreButton is not null && Application.Current is not null && this.CloseButton is not null)
+            CurrentWindow?.ToggleExtendedWindowStyle(IsToolWindow, ExtendedWindowStyle.ToolWindow);
+
+            if (this.MinimizeButton is not null && this.MaximizeRestoreButton is not null && Application.Current is not null && this.CloseButton is not null && this.TitleBarIcon != null)
             {
+                TitleBarIcon.Visibility = ShowIcon ? Visibility.Visible : Visibility.Collapsed;
+
                 if (this.CurrentWindow is not null)
                 {
                     // Maximize
@@ -166,7 +172,7 @@ public partial class TitleBarEx
 
                 CheckMaximization();
 
-                UpdateWindowBrushes();
+                UpdateAccentStripVisibility();
 
                 if (!IsMinimizable && !IsMaximizable)
                 {
@@ -194,7 +200,7 @@ public partial class TitleBarEx
         if (!this.MemorizeWindowPosition) return;
 
         // Prevent unnecessary size checks
-        allowSizeCheck = false;
+        _allowSizeCheck = false;
 
         // Check if the window position is saved
         if (GetValue<object>($"{this.WindowTag}PositionX") is not null)
@@ -210,7 +216,7 @@ public partial class TitleBarEx
 
                 // Maximize the window
                 this.CurrentWindow?.Maximize();
-                isMaximized = true;
+                _isMaximized = true;
             }
         }
 
@@ -218,11 +224,11 @@ public partial class TitleBarEx
         if (GetValue<object>($"{this.WindowTag}Maximized") is bool maximized && maximized)
         {
             this.CurrentWindow?.Maximize();
-            isMaximized = true;
+            _isMaximized = true;
         }
 
         // Allow size checks to resume
-        allowSizeCheck = true;
+        _allowSizeCheck = true;
 
         // Small delay before switching state
         await Task.Delay(50);
@@ -238,31 +244,24 @@ public partial class TitleBarEx
                 GetValue<double>($"{this.WindowTag}Height") / Display.Scale(this.CurrentWindow));
     }
 
-    public void UpdateWindowBrushes()
+    public void UpdateAccentStripVisibility()
     {
         // If the window has been closed stop checking
-        if (closed) return;
-
-        // Determine the appropriate foreground brush
-        var focusedForeground = Application.Current.Resources["TextFillColorPrimaryBrush"] as SolidColorBrush;
-        var unfocusedForeground = Application.Current.Resources["TextFillColorDisabledBrush"] as SolidColorBrush;
+        if (_closed) return;
 
         // Update based on accent title bar settings
-        if (IsAccentColorEnabledForTitleBars() && this.IsAccentTitleBarEnabled)
+        if (IsAccentColorEnabledForTitleBars() && this.IsAccentTitleBarEnabled && IsWindowFocused(this.CurrentWindow))
         {
             // Accent enabled
-            if (this.AccentStrip is not null) UpdateAccentVisibility(isWindowFocused);
+            if (this.AccentStrip is not null) this.AccentStrip.Visibility = Visibility.Visible;
         }
         else
         {
             // Accent disabled
-            if (this.AccentStrip is not null) UpdateAccentVisibility(false);
+            if (this.AccentStrip is not null) this.AccentStrip.Visibility = Visibility.Collapsed;
         }
 
-        SwitchState(ButtonsState.None);
-
-        // Local method to toggle AccentStrip visibility
-        void UpdateAccentVisibility(bool isVisible) => this.AccentStrip.Visibility = isVisible ? Visibility.Visible : Visibility.Collapsed;
+        //SwitchState(ButtonsState.None);
     }
 }
 

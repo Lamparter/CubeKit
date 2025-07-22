@@ -19,11 +19,13 @@
             <ToggleSwitch Header="Always use WinUI" IsOn="{x:Bind TitleBar.UseWinUIEverywhere, Mode=TwoWay}" />
             <ToggleSwitch Header="Allow accent title bar" IsOn="{x:Bind TitleBar.IsAccentTitleBarEnabled, Mode=TwoWay}" />
             <ToggleSwitch Header="Use ToolWindow" IsOn="{x:Bind TitleBar.IsToolWindow, Mode=TwoWay}" />
+            <ToggleSwitch Header="Show icon" IsOn="{x:Bind TitleBar.ShowIcon, Mode=TwoWay}" />
         </StackPanel>
         <toolkit:TitleBarEx
             x:Name="TitleBar"
             Title="Test app"
             VerticalAlignment="Top"
-            MemorizeWindowPosition="True" />
+            MemorizeWindowPosition="True"
+            Subtitle=" - Beta" />
     </Grid>
 </winuiex:WindowEx>

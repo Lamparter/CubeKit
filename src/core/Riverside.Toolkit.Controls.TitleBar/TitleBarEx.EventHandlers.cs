@@ -6,13 +6,11 @@ public partial class TitleBarEx
 {
     private void SwitchButtonStatePointerEvent(object sender, PointerRoutedEventArgs e)
     {
-        SwitchState(ButtonsState.None);
         InvokeChecks();
     }
 
     private void Content_PointerEntered(object sender, PointerRoutedEventArgs e)
     {
-        SwitchState(ButtonsState.None);
         InvokeChecks();
     }
 
@@ -26,8 +24,11 @@ public partial class TitleBarEx
 
     private void CurrentWindow_Closed(object sender, WindowEventArgs args)
     {
-        args.Handled = !this.IsClosable;
-        closed = this.IsClosable;
+        if (HookIntoClosedEvent)
+        {
+            args.Handled = !this.IsClosable;
+            _closed = this.IsClosable;
+        }
     }
 
     private void CheckMouseButtonDownPointerEvent(object sender, PointerRoutedEventArgs e)

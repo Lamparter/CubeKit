@@ -1,9 +1,4 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using System;
-using System.Threading.Tasks;
-using Windows.Foundation;
-using WinUIEx;
+﻿using Windows.Foundation;
 using WinUIEx.Messaging;
 using static Riverside.Toolkit.Helpers.NativeHelper;
 
@@ -11,7 +6,13 @@ namespace Riverside.Toolkit.Controls;
 
 public partial class TitleBarEx : Control
 {
-    // Check if the cursor's coordinates are inside the specified rect
+    /// <summary>
+    /// Check if the cursor's coordinates are inside the specified rect.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <param name="y"></param>
+    /// <param name="rect"></param>
+    /// <returns></returns>
     public static bool IsInRect(double x, double y, Rect? rect) => rect?.Left <= x && x <= rect?.Right && rect?.Top <= y && y <= rect?.Bottom;
 
     // Get bounds for a button using visuals
@@ -26,7 +27,7 @@ public partial class TitleBarEx : Control
 
         // Create a Rect for the button bounds with scaled positions
         double x = this.CurrentWindow.AppWindow.Position.X + (WND_FRAME_LEFT * scale) + (visualPoint.X * scale);
-        double y = this.CurrentWindow.AppWindow.Position.Y + (windowFrameTop * scale) + (visualPoint.Y * scale) + (!isMaximized ? 2 * scale : 0);
+        double y = this.CurrentWindow.AppWindow.Position.Y + (windowFrameTop * scale) + (visualPoint.Y * scale) + (!_isMaximized ? 2 * scale : 0);
         double width = button.ActualWidth * scale;
         double height = button.ActualHeight * scale;
 
@@ -36,10 +37,10 @@ public partial class TitleBarEx : Control
     // Attach the WndProc onto the window
     private void AttachWndProc()
     {
-        if (this.CurrentWindow is not null) messageMonitor ??= new WindowMessageMonitor(this.CurrentWindow);
-        if (messageMonitor is null) return;
-        messageMonitor.WindowMessageReceived -= WndProc;
-        messageMonitor.WindowMessageReceived += WndProc;
+        if (this.CurrentWindow is not null) _messageMonitor ??= new WindowMessageMonitor(this.CurrentWindow);
+        if (_messageMonitor is null) return;
+        _messageMonitor.WindowMessageReceived -= WndProc;
+        _messageMonitor.WindowMessageReceived += WndProc;
     }
 
     private bool previousButtonDown = false;
@@ -48,9 +49,9 @@ public partial class TitleBarEx : Control
     private async void WndProc(object? sender, WindowMessageEventArgs args)
     {
         // If the window is closed stop responding to window messages
-        if (closed && messageMonitor is not null)
+        if (_closed && _messageMonitor is not null)
         {
-            messageMonitor.WindowMessageReceived -= WndProc;
+            _messageMonitor.WindowMessageReceived -= WndProc;
             return;
         }
 
@@ -70,9 +71,9 @@ public partial class TitleBarEx : Control
             // Retrieve bounds for each button
             if (this.MinimizeButton != null && this.MaximizeRestoreButton != null && this.CloseButton != null)
             {
-                minimizeBounds = GetButtonBounds(this.MinimizeButton, additionalHeight);
-                maximizeBounds = GetButtonBounds(this.MaximizeRestoreButton, additionalHeight);
-                closeBounds = GetButtonBounds(this.CloseButton, additionalHeight);
+                minimizeBounds = GetButtonBounds(this.MinimizeButton, _additionalHeight);
+                maximizeBounds = GetButtonBounds(this.MaximizeRestoreButton, _additionalHeight);
+                closeBounds = GetButtonBounds(this.CloseButton, _additionalHeight);
             }
         }
         catch
@@ -81,7 +82,7 @@ public partial class TitleBarEx : Control
         }
 
         // If there's no button selected don't extend drag region for checks
-        if (this.CurrentCaption is SelectedCaptionButton.None) buttonDownHeight = 0;
+        if (this.CurrentCaption is SelectedCaptionButton.None) _buttonDownHeight = 0;
 
         bool IsInMinButton() => IsInRect(x, y, minimizeBounds) && this.MinimizeButton?.Visibility == Visibility.Visible;
         bool IsInMaxButton() => IsInRect(x, y, maximizeBounds) && this.MaximizeRestoreButton?.Visibility == Visibility.Visible;
@@ -92,12 +93,8 @@ public partial class TitleBarEx : Control
             // Window activate
             case WM_ACTIVATE:
                 {
-                    uint wParam = args.Message.WParam.ToUInt32();
-
-                    // Update focus state
-                    isWindowFocused = wParam is not WA_INACTIVE;
-                    UpdateWindowBrushes();
-
+                    _isWindowFocused = IsWindowFocused(this.CurrentWindow);
+                    SwitchState(ButtonsState.None);
                     break;
                 }
 
@@ -108,9 +105,9 @@ public partial class TitleBarEx : Control
                     if (IsLeftMouseButtonDown())
                     {
                         // Extend drag area
-                        buttonDownHeight = 25;
+                        _buttonDownHeight = 25;
 
-                        InvokeChecks();
+                        //InvokeChecks();
 
                         // Minimize
                         if (IsInMinButton() && this.CurrentCaption is SelectedCaptionButton.Minimize or SelectedCaptionButton.None)
@@ -150,9 +147,9 @@ public partial class TitleBarEx : Control
                     else
                     {
                         // Restore drag area
-                        buttonDownHeight = 0;
+                        _buttonDownHeight = 0;
 
-                        InvokeChecks();
+                        //InvokeChecks();
 
                         // Minimize
                         if (IsInMinButton() && this.CurrentCaption != SelectedCaptionButton.Minimize) this.CurrentCaption = SelectedCaptionButton.None;
@@ -173,7 +170,7 @@ public partial class TitleBarEx : Control
                         {
                             // Maximize
                             CheckMaximization();
-                            if (isMaximized) this.CurrentWindow?.Restore();
+                            if (_isMaximized) this.CurrentWindow?.Restore();
                             else this.CurrentWindow?.Maximize();
                             this.CurrentCaption = SelectedCaptionButton.None;
                             args.Handled = true;
@@ -280,9 +277,10 @@ public partial class TitleBarEx : Control
             // Left-click down on the non-client area
             case WM_NCLBUTTONDOWN:
                 {
-                    args.Handled = true;
+                    // Extend drag area
+                    _buttonDownHeight = 25;
 
-                    buttonDownHeight = 25;
+                    args.Handled = true;
 
                     // Minimize Button
                     if (IsInRect(x, y, minimizeBounds) && this.MinimizeButton?.Visibility == Visibility.Visible)
@@ -342,6 +340,9 @@ public partial class TitleBarEx : Control
             // Right-click on the non-client area
             case WM_NCRBUTTONUP:
                 {
+                    // Restore drag area
+                    _buttonDownHeight = 0;
+
                     // Show custom right-click menu if not using WinUI everywhere or clicking on a button
                     if (!this.UseWinUIEverywhere || IsInRect(x, y, minimizeBounds) || IsInRect(x, y, maximizeBounds) || IsInRect(x, y, closeBounds) || this.CurrentWindow is null)
                         return;
@@ -352,7 +353,7 @@ public partial class TitleBarEx : Control
                     this.CustomRightClickFlyout?.ShowAt(this, new Microsoft.UI.Xaml.Controls.Primitives.FlyoutShowOptions()
                     {
                         Position = new Point(x - this.CurrentWindow.AppWindow.Position.X - (WND_FRAME_LEFT * scale),
-                                             y - this.CurrentWindow.AppWindow.Position.Y - (additionalHeight * scale))
+                                             y - this.CurrentWindow.AppWindow.Position.Y - (_additionalHeight * scale))
                     });
 
                     break;
@@ -375,6 +376,8 @@ public partial class TitleBarEx : Control
                     break;
                 }
         }
+
+        UpdateAccentStripVisibility();
 
         void UpdateNonClientHitTestButtonState(SelectedCaptionButton button, ButtonsState pointerOver, ButtonsState pressed) => SwitchState(
                 // If the current caption is none, select it as usual
